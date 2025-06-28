@@ -3,45 +3,32 @@ let tasks = []
 let editMode = false
 let editId = null
 
-const taskTable = document.getElementById('taskTable')
-const taskBody = document.getElementById('taskBody')
 const taskForm = document.getElementById('taskForm')
+const pendingList = document.getElementById('pendingList')
+const completedList = document.getElementById('completedList')
 
 function renderTasks() {
-  taskBody.innerHTML = ''
-  if (tasks.length === 0) {
-    taskTable.style.display = 'none'
-    return
-  }
-  taskTable.style.display = ''
+  pendingList.innerHTML = ''
+  completedList.innerHTML = ''
   tasks.forEach(task => {
-    const tr = document.createElement('tr')
-    tr.className = task.is_done ? 'done' : ''
-    tr.innerHTML = `
-      <td>${task.title}</td>
-      <td>${task.description || ''}</td>
-      <td>${task.due_date}${task.due_time ? ' ' + task.due_time : ''}</td>
-      <td>${task.is_done ? 'Completada' : 'Pendiente'}</td>
-      <td class="task-actions">
-        <button class="toggle">${task.is_done ? '↺' : '✓'}</button>
+    const li = document.createElement('li')
+    li.draggable = true
+    li.dataset.id = task.id
+    li.className = task.is_done ? 'done' : ''
+    li.innerHTML = `
+      <span>
+        <strong>${task.title}</strong><br>
+        <small>${task.due_date}${task.due_time ? ' ' + task.due_time : ''}</small>
+      </span>
+      <div class="task-actions">
         <button class="edit">✎</button>
         <button class="delete">🗑️</button>
-      </td>
+      </div>
     `
-    tr.querySelector('.toggle').addEventListener('click', () => {
-      task.is_done = !task.is_done
-      renderTasks()
-    })
-    tr.querySelector('.edit').addEventListener('click', () => {
-      editMode = true
-      editId = task.id
-      taskForm.title.value = task.title
-      taskForm.description.value = task.description
-      taskForm.due_date.value = task.due_date
-      taskForm.due_time.value = task.due_time || ''
-      taskForm.querySelector('button[type="submit"]').textContent = 'Actualizar'
-    })
-    tr.querySelector('.delete').addEventListener('click', () => {
+    li.addEventListener('dragstart', onDragStart)
+    li.addEventListener('dragend', onDragEnd)
+    li.querySelector('.edit').addEventListener('click', () => startEdit(task))
+    li.querySelector('.delete').addEventListener('click', () => {
       tasks = tasks.filter(t => t.id !== task.id)
       if (editMode && editId === task.id) {
         editMode = false
@@ -51,8 +38,37 @@ function renderTasks() {
       }
       renderTasks()
     })
-    taskBody.appendChild(tr)
+    if (task.is_done) completedList.appendChild(li)
+    else pendingList.appendChild(li)
   })
+}
+
+function onDragStart(e) {
+  e.dataTransfer.setData('text/plain', e.target.dataset.id)
+}
+function onDragEnd() {
+  document.querySelectorAll('.task-list').forEach(ul => ul.classList.remove('drag-over'))
+}
+function allowDrop(e) {
+  e.preventDefault()
+  e.currentTarget.classList.add('drag-over')
+}
+function onDrop(e) {
+  e.preventDefault()
+  const id = +e.dataTransfer.getData('text/plain')
+  const status = e.currentTarget.parentElement.dataset.status === 'true'
+  tasks = tasks.map(t => t.id === id ? { ...t, is_done: status } : t)
+  renderTasks()
+}
+
+function startEdit(task) {
+  editMode = true
+  editId = task.id
+  taskForm.title.value = task.title
+  taskForm.description.value = task.description
+  taskForm.due_date.value = task.due_date
+  taskForm.due_time.value = task.due_time || ''
+  taskForm.querySelector('button[type="submit"]').textContent = 'Actualizar'
 }
 
 async function loadTasks() {
@@ -63,34 +79,34 @@ async function loadTasks() {
 
 taskForm.addEventListener('submit', e => {
   e.preventDefault()
-  const formData = new FormData(taskForm)
-  const title = formData.get('title').trim()
-  const description = formData.get('description').trim()
-  const due_date = formData.get('due_date')
-  const due_time = formData.get('due_time')
+  const f = new FormData(taskForm)
+  const title = f.get('title').trim()
+  const date = f.get('due_date')
   const today = new Date().toISOString().split('T')[0]
-  if (!title) return alert('El título no puede quedar vacío.')
-  if (due_date < today) return alert('La fecha de vencimiento no puede ser anterior a hoy.')
+  if (!title || date < today) return
+  const data = {
+    title,
+    description: f.get('description').trim(),
+    due_date: date,
+    due_time: f.get('due_time'),
+    is_done: false
+  }
   if (editMode) {
-    tasks = tasks.map(t =>
-      t.id === editId ? { ...t, title, description, due_date, due_time } : t
-    )
+    tasks = tasks.map(t => t.id === editId ? { ...t, ...data } : t)
     editMode = false
     editId = null
     taskForm.querySelector('button[type="submit"]').textContent = 'Agregar tarea'
   } else {
-    const newTask = {
-      id: tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 1,
-      title,
-      description,
-      due_date,
-      due_time,
-      is_done: false
-    }
-    tasks.push(newTask)
+    const id = tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 1
+    tasks.push({ id, ...data })
   }
   taskForm.reset()
   renderTasks()
+})
+
+;[pendingList, completedList].forEach(ul => {
+  ul.addEventListener('dragover', allowDrop)
+  ul.addEventListener('drop', onDrop)
 })
 
 loadTasks()
