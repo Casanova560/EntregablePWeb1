@@ -10,7 +10,7 @@
   <button id="themeToggle" class="theme-toggle" aria-label="Alternar tema">🌓</button>
   <main>
     <section aria-labelledby="app-title">
-      <h1 id="app-title">Tablero de Tareas</h1>
+      <h1 id="app-title">Tareas</h1>
       <form id="taskForm" novalidate>
         <div class="form-group">
           <label for="title">Título</label>
@@ -31,12 +31,16 @@
         <button type="submit">Agregar tarea</button>
       </form>
       <div class="board">
-        <div class="column" data-status="false">
-          <h2>Pendientes</h2>
+        <div class="column" data-status="pending">
+          <h2>Pendiente</h2>
           <ul id="pendingList" class="task-list" role="list" aria-label="Pendientes"></ul>
         </div>
-        <div class="column" data-status="true">
-          <h2>Completadas</h2>
+        <div class="column" data-status="inProgress">
+          <h2>En Progreso</h2>
+          <ul id="inProgressList" class="task-list" role="list" aria-label="En Progreso"></ul>
+        </div>
+        <div class="column" data-status="completed">
+          <h2>Completada</h2>
           <ul id="completedList" class="task-list" role="list" aria-label="Completadas"></ul>
         </div>
       </div>
@@ -56,6 +60,7 @@
   <script src="app.js"></script>
 </body>
 </html>
+
 
 
 
