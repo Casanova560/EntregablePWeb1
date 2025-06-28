@@ -1,107 +1,79 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+:root {
+  --bg: #f5f5f5; --text: #333; --accent: #28a745; --btn-hover: #218838;
+  --card-bg: #fafafa; --card-shadow: rgba(0,0,0,0.1);
 }
+[data-theme="dark"] {
+  --bg: #222; --text: #eee; --accent: #4caf50; --btn-hover: #45a049;
+  --card-bg: #333; --card-shadow: rgba(0,0,0,0.5);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
-  color: #333;
-  display: flex;
-  justify-content: center;
-  padding: 2rem;
+  font-family: Arial, sans-serif; background: var(--bg); color: var(--text);
+  display: flex; justify-content: center; padding: 2rem;
+  transition: background .3s, color .3s;
 }
-main {
-  width: 100%;
-  max-width: 800px;
+.theme-toggle {
+  position: fixed; top: 1rem; right: 1rem;
+  width: 1.5rem; height: 1.5rem; font-size: 1rem;
+  background: none; border: none; cursor: pointer;
 }
-h1 {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-.form-group {
-  margin-bottom: 0.75rem;
-}
-label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-weight: bold;
-}
+main { width: 100%; max-width: 800px; }
+h1 { text-align: center; margin-bottom: 1rem; }
+.form-group { margin-bottom: .75rem; }
+label { display: block; margin-bottom: .25rem; font-weight: bold; }
 form {
-  background: #fff;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: var(--card-bg); padding: 1rem; border-radius: 8px;
+  margin-bottom: 1.5rem; box-shadow: 0 2px 8px var(--card-shadow);
 }
 form input, form textarea {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  width: 100%; padding: .5rem; border: 1px solid #ccc; border-radius: 4px;
+  transition: border-color .3s;
 }
 form button {
-  margin-top: 0.5rem;
-  padding: 0.6rem 1rem;
-  background: #28a745;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  margin-top: .5rem; padding: .6rem 1rem; background: var(--accent);
+  color: #fff; border: none; border-radius: 4px; cursor: pointer;
+  transition: background .3s;
+}
+form button:hover { background: var(--btn-hover); }
+.input-error { border-color: #dc3545; }
+.error-msg {
+  color: #dc3545; font-size: .85rem; margin-top: .25rem;
 }
 .board {
-  display: flex;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
   gap: 1rem;
 }
 .column {
-  background: #fff;
-  flex: 1;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: var(--card-bg); border-radius: 8px; padding: 1rem;
+  box-shadow: 0 2px 8px var(--card-shadow);
 }
-.column h2 {
-  text-align: center;
-  margin-bottom: 0.5rem;
-}
+.column h2 { text-align: center; margin-bottom: .5rem; }
 .task-list {
-  list-style: none;
-  min-height: 200px;
+  list-style: none; min-height: 200px; transition: background .3s;
 }
 .task-list li {
-  background: #fafafa;
-  margin-bottom: 0.75rem;
-  padding: 0.75rem;
-  border-radius: 4px;
-  cursor: grab;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: var(--card-bg); margin-bottom: .75rem; padding: .75rem;
+  border-radius: 4px; cursor: grab;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: transform .3s, box-shadow .3s, opacity .3s;
 }
-.task-list li:active {
-  cursor: grabbing;
-}
+.task-list li:hover { transform: translateY(-2px); }
 .task-list li.done {
-  opacity: 0.6;
-  text-decoration: line-through;
+  opacity: .6; text-decoration: line-through;
 }
 .task-list li.drag-over {
-  border: 2px dashed #007bff;
+  box-shadow: 0 0 0 3px var(--accent);
 }
-.task-actions {
-  display: flex;
-  gap: 0.5rem;
+.placeholder {
+  background: transparent; border: 2px dashed var(--accent);
+  height: 3rem; margin-bottom: .75rem; transition: background .3s;
 }
-.task-actions button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
+.empty-state {
+  text-align: center; padding: 2rem; color: #666;
 }
-.task-actions .edit {
-  color: #ffc107;
+.empty-state button {
+  margin-top: 1rem; padding: .5rem 1rem; background: var(--accent);
+  color: #fff; border: none; border-radius: 4px; cursor: pointer;
 }
-.task-actions .delete {
-  color: #dc3545;
-}
+
 

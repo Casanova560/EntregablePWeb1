@@ -6,14 +6,49 @@ let editId = null
 const taskForm = document.getElementById('taskForm')
 const pendingList = document.getElementById('pendingList')
 const completedList = document.getElementById('completedList')
+const titleInput = taskForm.querySelector('[name="title"]')
+const dateInput  = taskForm.querySelector('[name="due_date"]')
+
+function showError(el, msg) {
+  clearError(el)
+  const e = document.createElement('div')
+  e.className = 'error-msg'
+  e.textContent = msg
+  el.after(e)
+  el.classList.add('input-error')
+}
+function clearError(el) {
+  const nxt = el.nextElementSibling
+  if (nxt && nxt.classList.contains('error-msg')) nxt.remove()
+  el.classList.remove('input-error')
+}
+
+titleInput.addEventListener('input', () => {
+  if (!titleInput.value.trim()) showError(titleInput, 'El título es obligatorio.')
+  else clearError(titleInput)
+})
+dateInput.addEventListener('input', () => {
+  if (dateInput.value < dateInput.min) showError(dateInput, 'Fecha inválida.')
+  else clearError(dateInput)
+})
 
 function renderTasks() {
   pendingList.innerHTML = ''
   completedList.innerHTML = ''
+
+  if (tasks.length === 0) {
+    pendingList.innerHTML = `<li class="empty-state">No hay tareas aún.</li>`
+    completedList.innerHTML = `<li class="empty-state">No hay tareas completadas.</li>`
+    return
+  }
+
   tasks.forEach(task => {
     const li = document.createElement('li')
     li.draggable = true
     li.dataset.id = task.id
+    li.setAttribute('role', 'listitem')
+    li.setAttribute('tabindex', '0')
+    li.setAttribute('aria-grabbed', 'false')
     li.className = task.is_done ? 'done' : ''
     li.innerHTML = `
       <span>
@@ -21,12 +56,18 @@ function renderTasks() {
         <small>${task.due_date}${task.due_time ? ' ' + task.due_time : ''}</small>
       </span>
       <div class="task-actions">
-        <button class="edit">✎</button>
-        <button class="delete">🗑️</button>
+        <button class="edit" aria-label="Editar">✎</button>
+        <button class="delete" aria-label="Eliminar">🗑️</button>
       </div>
     `
-    li.addEventListener('dragstart', onDragStart)
-    li.addEventListener('dragend', onDragEnd)
+    li.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', li.dataset.id)
+      li.setAttribute('aria-grabbed', 'true')
+    })
+    li.addEventListener('dragend', () => {
+      document.querySelectorAll('.task-list').forEach(ul => ul.classList.remove('drag-over'))
+      li.setAttribute('aria-grabbed', 'false')
+    })
     li.querySelector('.edit').addEventListener('click', () => startEdit(task))
     li.querySelector('.delete').addEventListener('click', () => {
       tasks = tasks.filter(t => t.id !== task.id)
@@ -41,14 +82,15 @@ function renderTasks() {
     if (task.is_done) completedList.appendChild(li)
     else pendingList.appendChild(li)
   })
+
+  if (!pendingList.children.length) {
+    pendingList.innerHTML = `<li class="empty-state">No hay tareas pendientes.</li>`
+  }
+  if (!completedList.children.length) {
+    completedList.innerHTML = `<li class="empty-state">No hay tareas completadas.</li>`
+  }
 }
 
-function onDragStart(e) {
-  e.dataTransfer.setData('text/plain', e.target.dataset.id)
-}
-function onDragEnd() {
-  document.querySelectorAll('.task-list').forEach(ul => ul.classList.remove('drag-over'))
-}
 function allowDrop(e) {
   e.preventDefault()
   e.currentTarget.classList.add('drag-over')
@@ -79,15 +121,23 @@ async function loadTasks() {
 
 taskForm.addEventListener('submit', e => {
   e.preventDefault()
+  clearError(titleInput)
+  clearError(dateInput)
+  if (!titleInput.value.trim()) {
+    showError(titleInput, 'El título es obligatorio.')
+    titleInput.focus()
+    return
+  }
+  if (dateInput.value < dateInput.min) {
+    showError(dateInput, 'Fecha inválida.')
+    dateInput.focus()
+    return
+  }
   const f = new FormData(taskForm)
-  const title = f.get('title').trim()
-  const date = f.get('due_date')
-  const today = new Date().toISOString().split('T')[0]
-  if (!title || date < today) return
   const data = {
-    title,
+    title: f.get('title').trim(),
     description: f.get('description').trim(),
-    due_date: date,
+    due_date: f.get('due_date'),
     due_time: f.get('due_time'),
     is_done: false
   }

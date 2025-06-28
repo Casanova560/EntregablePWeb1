@@ -7,13 +7,14 @@
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
+  <button id="themeToggle" class="theme-toggle" aria-label="Alternar tema">🌓</button>
   <main>
     <section aria-labelledby="app-title">
       <h1 id="app-title">Tablero de Tareas</h1>
-      <form id="taskForm">
+      <form id="taskForm" novalidate>
         <div class="form-group">
           <label for="title">Título</label>
-          <input id="title" type="text" name="title" placeholder="Título de la tarea" required/>
+          <input id="title" name="title" type="text" placeholder="Título de la tarea" required/>
         </div>
         <div class="form-group">
           <label for="description">Descripción</label>
@@ -21,32 +22,42 @@
         </div>
         <div class="form-group">
           <label for="due_date">Fecha</label>
-          <input id="due_date" type="date" name="due_date" required/>
+          <input id="due_date" name="due_date" type="date" required/>
         </div>
         <div class="form-group">
           <label for="due_time">Hora</label>
-          <input id="due_time" type="time" name="due_time"/>
+          <input id="due_time" name="due_time" type="time"/>
         </div>
         <button type="submit">Agregar tarea</button>
       </form>
       <div class="board">
         <div class="column" data-status="false">
           <h2>Pendientes</h2>
-          <ul id="pendingList" class="task-list"></ul>
+          <ul id="pendingList" class="task-list" role="list" aria-label="Pendientes"></ul>
         </div>
         <div class="column" data-status="true">
           <h2>Completadas</h2>
-          <ul id="completedList" class="task-list"></ul>
+          <ul id="completedList" class="task-list" role="list" aria-label="Completadas"></ul>
         </div>
       </div>
     </section>
   </main>
   <script>
-    document.getElementById('due_date').min = new Date().toISOString().split('T')[0]
+    const btn = document.getElementById('themeToggle');
+    btn.addEventListener('click', () => {
+      const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('theme', t);
+    });
+    const saved = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    document.getElementById('due_date').min = new Date().toISOString().split('T')[0];
   </script>
   <script src="app.js"></script>
 </body>
 </html>
+
+
 
 
 
