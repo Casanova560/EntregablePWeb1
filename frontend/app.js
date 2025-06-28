@@ -1,4 +1,3 @@
-// frontend/app.js
 const DATA_URL = 'tasks.json'
 let tasks = []
 let editMode = false
