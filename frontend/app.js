@@ -1,3 +1,4 @@
+// frontend/app.js
 const DATA_URL = 'tasks.json'
 let tasks = []
 let editMode = false
@@ -35,9 +36,9 @@ dateInput.addEventListener('input', () => {
 
 // Render de las tres columnas
 function renderTasks() {
-  pendingList.innerHTML = ''
+  pendingList.innerHTML    = ''
   inProgressList.innerHTML = ''
-  completedList.innerHTML = ''
+  completedList.innerHTML  = ''
 
   if (tasks.length === 0) {
     pendingList.innerHTML    = `<li class="empty-state">No hay tareas aún.</li>`
@@ -65,7 +66,6 @@ function renderTasks() {
         <button class="delete" aria-label="Eliminar">🗑️</button>
       </div>
     `
-    // Drag & Drop
     li.addEventListener('dragstart', e => {
       e.dataTransfer.setData('text/plain', li.dataset.id)
       li.setAttribute('aria-grabbed','true')
@@ -74,18 +74,17 @@ function renderTasks() {
       document.querySelectorAll('.task-list').forEach(ul => ul.classList.remove('drag-over'))
       li.setAttribute('aria-grabbed','false')
     })
-    // Edit / Delete
     li.querySelector('.edit').addEventListener('click', () => startEdit(task))
     li.querySelector('.delete').addEventListener('click', () => {
       tasks = tasks.filter(t => t.id !== task.id)
       if (editMode && editId === task.id) {
-        editMode = false; editId = null
+        editMode = false
+        editId = null
         taskForm.reset()
         taskForm.querySelector('button[type="submit"]').textContent = 'Agregar tarea'
       }
       renderTasks()
     })
-    // Append a la columna correcta
     if (task.status === 'pending')    pendingList.appendChild(li)
     if (task.status === 'inProgress') inProgressList.appendChild(li)
     if (task.status === 'completed')  completedList.appendChild(li)
@@ -96,7 +95,6 @@ function renderTasks() {
   if (!completedList.children.length)  completedList.innerHTML  = `<li class="empty-state">No hay tareas completadas.</li>`
 }
 
-// Drop handlers
 function allowDrop(e) {
   e.preventDefault()
   e.currentTarget.classList.add('drag-over')
@@ -109,9 +107,9 @@ function onDrop(e) {
   renderTasks()
 }
 
-// Iniciar edición
 function startEdit(task) {
-  editMode = true; editId = task.id
+  editMode = true
+  editId = task.id
   taskForm.title.value       = task.title
   taskForm.description.value = task.description
   taskForm.due_date.value    = task.due_date
@@ -119,7 +117,6 @@ function startEdit(task) {
   taskForm.querySelector('button[type="submit"]').textContent = 'Actualizar'
 }
 
-// Carga inicial
 async function loadTasks() {
   const res = await fetch(DATA_URL)
   const raw = await res.json()
@@ -130,7 +127,6 @@ async function loadTasks() {
   renderTasks()
 }
 
-// Form submit
 taskForm.addEventListener('submit', e => {
   e.preventDefault()
   clearError(titleInput)
@@ -158,7 +154,8 @@ taskForm.addEventListener('submit', e => {
 
   if (editMode) {
     tasks = tasks.map(t => t.id === editId ? { ...t, ...data } : t)
-    editMode = false; editId = null
+    editMode = false
+    editId = null
     taskForm.querySelector('button[type="submit"]').textContent = 'Agregar tarea'
   } else {
     const id = tasks.length ? Math.max(...tasks.map(t=>t.id)) + 1 : 1
@@ -169,7 +166,6 @@ taskForm.addEventListener('submit', e => {
   renderTasks()
 })
 
-// Enable drop
 ;[pendingList, inProgressList, completedList].forEach(ul => {
   ul.addEventListener('dragover', allowDrop)
   ul.addEventListener('drop',     onDrop)
